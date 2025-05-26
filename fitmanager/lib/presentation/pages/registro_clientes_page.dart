@@ -28,6 +28,81 @@ class _RegistroClientesPageState extends State<RegistroClientesPage> {
     });
   }
 
+  void _mostrarDialogoCliente(Cliente cliente) {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2A2A2A),
+            title: Text(
+              'Cliente: ${cliente.nombre}',
+              style: const TextStyle(color: Colors.white),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ID: ${cliente.id}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                Text(
+                  'Sexo: ${cliente.sexo}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                Text(
+                  'Nacimiento: ${cliente.fechaNacimiento}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                Text(
+                  'Teléfono: ${cliente.telefono}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                Text(
+                  'Membresía: ${cliente.fechaInicioMembresia}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                Text(
+                  'Estado: ${cliente.estado}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  print('Editar cliente: ${cliente.id}');
+                  // Aquí podrías navegar a una pantalla de edición en el siguiente paso
+                },
+                child: const Text(
+                  'Editar',
+                  style: TextStyle(color: Colors.orange),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await ClienteRepository().eliminarCliente(cliente.id!);
+                  Navigator.pop(context);
+                  _cargarClientes(); // refrescar la lista
+                },
+                child: const Text(
+                  'Eliminar',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cerrar',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +158,7 @@ class _RegistroClientesPageState extends State<RegistroClientesPage> {
                           ),
                         ],
                       ),
+                      onTap: () => _mostrarDialogoCliente(cliente),
                     ),
                   );
                 },
