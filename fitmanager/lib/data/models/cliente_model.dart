@@ -17,7 +17,7 @@ class Cliente {
     required this.estado,
   });
 
-  // Convierte un objeto Cliente a Map<String, dynamic>
+  // Convertir Cliente en Map (para guardar en SQLite)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -30,7 +30,7 @@ class Cliente {
     };
   }
 
-  // Crea un objeto Cliente a partir de un mapa
+  // Convertir un Map en objeto Cliente (cuando se lee desde SQLite)
   factory Cliente.fromMap(Map<String, dynamic> map) {
     return Cliente(
       id: map['id'],
