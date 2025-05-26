@@ -1,7 +1,6 @@
 import 'package:fitmanager/data/models/cliente_model.dart';
 import 'package:fitmanager/data/repositories/cliente_repository.dart';
 import 'package:fitmanager/presentation/pages/nuevo_cliente_page.dart';
-import 'package:fitmanager/presentation/pages/registro_clientes_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,8 +13,8 @@ class ClientesPage extends StatefulWidget {
 
 class _ClientesPageState extends State<ClientesPage> {
   final TextEditingController _searchController = TextEditingController();
-  List<Cliente> _clientes = [];
-  List<Cliente> _resultados = [];
+  List<Cliente> _todosLosClientes = [];
+  List<Cliente> _clientesFiltrados = [];
 
   @override
   void initState() {
@@ -25,21 +24,26 @@ class _ClientesPageState extends State<ClientesPage> {
   }
 
   Future<void> _cargarClientes() async {
-    final lista = await ClienteRepository().obtenerClientes();
+    final clientes = await ClienteRepository().obtenerClientes();
     setState(() {
-      _clientes = lista;
+      _todosLosClientes = clientes;
+      _filtrarClientes();
     });
   }
 
   void _filtrarClientes() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _resultados =
-          _clientes.where((cliente) {
-            final nombre = cliente.nombre.toLowerCase();
-            final codigo = cliente.id?.toLowerCase() ?? '';
-            return nombre.contains(query) || codigo.contains(query);
-          }).toList();
+      if (query.isEmpty) {
+        _clientesFiltrados = [];
+      } else {
+        _clientesFiltrados =
+            _todosLosClientes.where((cliente) {
+              final nombre = cliente.nombre.toLowerCase();
+              final id = cliente.id.toString();
+              return nombre.contains(query) || id.contains(query);
+            }).toList();
+      }
     });
   }
 
@@ -47,6 +51,14 @@ class _ClientesPageState extends State<ClientesPage> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _irANuevoCliente() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NuevoClientePage()),
+    );
+    _cargarClientes(); // Recargar después de registrar nuevo cliente
   }
 
   @override
@@ -87,34 +99,34 @@ class _ClientesPageState extends State<ClientesPage> {
               ),
             ),
             const SizedBox(height: 20),
-            if (_resultados.isNotEmpty)
-              Column(
-                children:
-                    _resultados.map((cliente) {
-                      return Card(
-                        color: const Color(0xFF2A2A2A),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: ListTile(
-                          leading: const Icon(
-                            Icons.person,
-                            color: Colors.orange,
-                          ),
-                          title: Text(
-                            cliente.nombre,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            'Teléfono: ${cliente.telefono}',
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+
+            // 🧾 Resultados
+            if (_clientesFiltrados.isNotEmpty)
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: _clientesFiltrados.length,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final cliente = _clientesFiltrados[index];
+                  return Card(
+                    color: const Color(0xFF2A2A2A),
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      leading: const Icon(Icons.person, color: Colors.orange),
+                      title: Text(
+                        cliente.nombre,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        'Código: ${cliente.id}\nTeléfono: ${cliente.telefono}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  );
+                },
               ),
 
             const SizedBox(height: 30),
-
-            // 🧾 Acciones
             Text(
               'Acciones rápidas',
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
@@ -123,38 +135,9 @@ class _ClientesPageState extends State<ClientesPage> {
             _buildMainButton(
               icon: Icons.person_add,
               text: 'Nuevo cliente',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const NuevoClientePage()),
-                );
-              },
+              onPressed: _irANuevoCliente,
             ),
             const SizedBox(height: 12),
-            _buildMainButton(
-              icon: Icons.list,
-              text: 'Registro de clientes',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const RegistroClientesPage(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-
-            // ↩️ Volver
-            Center(
-              child: _buildSecondaryButton(
-                icon: Icons.arrow_back,
-                text: 'Volver',
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
           ],
         ),
       ),
@@ -183,27 +166,4 @@ class _ClientesPageState extends State<ClientesPage> {
       ),
     );
   }
-
-  Widget _buildSecondaryButton({
-    required IconData icon,
-    required String text,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton.icon(
-      icon: Icon(icon, color: Colors.white),
-      label: Text(
-        text,
-        style: const TextStyle(fontSize: 16, color: Colors.white),
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-        side: const BorderSide(color: Colors.white),
-      ),
-      onPressed: onPressed,
-    );
-  }
-}
-
-extension on int? {
-  toLowerCase() {}
 }
