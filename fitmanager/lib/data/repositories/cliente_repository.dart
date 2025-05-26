@@ -1,10 +1,10 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:fitmanager/core/database/local_db.dart';
 import 'package:fitmanager/data/models/cliente_model.dart';
+import 'package:sqflite/sqflite.dart';
 
 class ClienteRepository {
   // Insertar un nuevo cliente
-  static Future<void> insertarCliente(Cliente cliente) async {
+  Future<void> insertarCliente(Cliente cliente) async {
     final db = await LocalDatabase.getDatabase();
     await db.insert(
       'clientes',
@@ -13,11 +13,27 @@ class ClienteRepository {
     );
   }
 
-  // Obtener todos los clientes registrados
-  static Future<List<Cliente>> obtenerClientes() async {
+  // Obtener todos los clientes
+  Future<List<Cliente>> obtenerClientes() async {
     final db = await LocalDatabase.getDatabase();
-    final List<Map<String, dynamic>> resultado = await db.query('clientes');
+    final List<Map<String, dynamic>> maps = await db.query('clientes');
+    return maps.map((map) => Cliente.fromMap(map)).toList();
+  }
 
-    return resultado.map((mapa) => Cliente.fromMap(mapa)).toList();
+  // Eliminar un cliente por ID
+  Future<void> eliminarCliente(int id) async {
+    final db = await LocalDatabase.getDatabase();
+    await db.delete('clientes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Actualizar un cliente
+  Future<void> actualizarCliente(Cliente cliente) async {
+    final db = await LocalDatabase.getDatabase();
+    await db.update(
+      'clientes',
+      cliente.toMap(),
+      where: 'id = ?',
+      whereArgs: [cliente.id],
+    );
   }
 }
