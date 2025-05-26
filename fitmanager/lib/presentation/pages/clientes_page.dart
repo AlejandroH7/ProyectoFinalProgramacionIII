@@ -1,3 +1,5 @@
+import 'package:fitmanager/data/models/cliente_model.dart';
+import 'package:fitmanager/data/repositories/cliente_repository.dart';
 import 'package:fitmanager/presentation/pages/nuevo_cliente_page.dart';
 import 'package:fitmanager/presentation/pages/registro_clientes_page.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,36 @@ class ClientesPage extends StatefulWidget {
 class _ClientesPageState extends State<ClientesPage> {
   final TextEditingController _searchController = TextEditingController();
   String estadoSeleccionado = 'Todos';
+  List<Cliente> todosLosClientes = [];
+  List<Cliente> clientesFiltrados = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarClientes();
+  }
+
+  Future<void> _cargarClientes() async {
+    final lista = await ClienteRepository().obtenerClientes();
+    setState(() {
+      todosLosClientes = lista;
+      clientesFiltrados = lista;
+    });
+  }
+
+  void _filtrarClientes(String query) {
+    final filtrados =
+        todosLosClientes.where((cliente) {
+          final nombre = cliente.nombre.toLowerCase();
+          final codigo = cliente.codigo?.toLowerCase() ?? '';
+          final filtro = query.toLowerCase();
+          return nombre.contains(filtro) || codigo.contains(filtro);
+        }).toList();
+
+    setState(() {
+      clientesFiltrados = filtrados;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +71,7 @@ class _ClientesPageState extends State<ClientesPage> {
             const SizedBox(height: 8),
             TextField(
               controller: _searchController,
+              onChanged: _filtrarClientes,
               style: const TextStyle(color: Colors.black87),
               decoration: InputDecoration(
                 hintText: 'Ingrese nombre o código',
@@ -51,6 +84,34 @@ class _ClientesPageState extends State<ClientesPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
+
+            // 🧾 Lista de resultados
+            if (clientesFiltrados.isNotEmpty)
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: clientesFiltrados.length,
+                itemBuilder: (context, index) {
+                  final cliente = clientesFiltrados[index];
+                  return Card(
+                    color: const Color(0xFF2A2A2A),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: const Icon(Icons.person, color: Colors.orange),
+                      title: Text(
+                        cliente.nombre,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        'Código: ${cliente.codigo ?? "-"}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
             const SizedBox(height: 30),
 
             // 🧾 Acciones
@@ -93,7 +154,6 @@ class _ClientesPageState extends State<ClientesPage> {
             _buildDropdown(),
             const SizedBox(height: 10),
 
-            // Placeholder de resumen
             if (estadoSeleccionado != 'Todos')
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
@@ -108,7 +168,6 @@ class _ClientesPageState extends State<ClientesPage> {
 
             const SizedBox(height: 40),
 
-            // ↩️ Volver
             Center(
               child: _buildSecondaryButton(
                 icon: Icons.arrow_back,
@@ -169,18 +228,13 @@ class _ClientesPageState extends State<ClientesPage> {
   Widget _buildDropdown() {
     return DropdownButtonFormField<String>(
       value: estadoSeleccionado,
-      dropdownColor: const Color.fromARGB(
-        255,
-        192,
-        190,
-        190,
-      ), // fondo gris claro
+      dropdownColor: const Color.fromARGB(255, 192, 190, 190),
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[300],
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
       ),
-      style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+      style: const TextStyle(color: Colors.black),
       items: const [
         DropdownMenuItem(value: 'Todos', child: Text('Todos')),
         DropdownMenuItem(value: 'Activos', child: Text('Clientes activos')),
