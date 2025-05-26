@@ -1,6 +1,7 @@
 import 'package:fitmanager/data/models/cliente_model.dart';
 import 'package:fitmanager/data/repositories/cliente_repository.dart';
 import 'package:fitmanager/presentation/pages/nuevo_cliente_page.dart';
+import 'package:fitmanager/presentation/pages/registro_clientes_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -59,6 +60,14 @@ class _ClientesPageState extends State<ClientesPage> {
       MaterialPageRoute(builder: (_) => const NuevoClientePage()),
     );
     _cargarClientes(); // Recargar después de registrar nuevo cliente
+  }
+
+  void _irARegistroClientes() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const RegistroClientesPage()),
+    );
+    _cargarClientes(); // También recarga al volver
   }
 
   @override
@@ -138,6 +147,19 @@ class _ClientesPageState extends State<ClientesPage> {
               onPressed: _irANuevoCliente,
             ),
             const SizedBox(height: 12),
+            _buildMainButton(
+              icon: Icons.list,
+              text: 'Registro de clientes',
+              onPressed: _irARegistroClientes,
+            ),
+            const SizedBox(height: 30),
+            Center(
+              child: _buildSecondaryButton(
+                icon: Icons.arrow_back,
+                text: 'Volver',
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
           ],
         ),
       ),
@@ -164,6 +186,25 @@ class _ClientesPageState extends State<ClientesPage> {
         ),
         onPressed: onPressed,
       ),
+    );
+  }
+
+  Widget _buildSecondaryButton({
+    required IconData icon,
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      icon: Icon(icon, color: Colors.white),
+      label: Text(
+        text,
+        style: const TextStyle(fontSize: 16, color: Colors.white),
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+        side: const BorderSide(color: Colors.white),
+      ),
+      onPressed: onPressed,
     );
   }
 }
