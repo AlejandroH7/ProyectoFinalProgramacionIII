@@ -1,3 +1,4 @@
+import 'package:fitmanager/presentation/pages/editar_cliente_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fitmanager/data/models/cliente_model.dart';
@@ -70,27 +71,24 @@ class _RegistroClientesPageState extends State<RegistroClientesPage> {
             ),
             actions: [
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(context);
-                  print('Editar cliente: ${cliente.id}');
-                  // Aquí podrías navegar a una pantalla de edición en el siguiente paso
+                  final actualizado = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditarClientePage(cliente: cliente),
+                    ),
+                  );
+                  if (actualizado == true) {
+                    _cargarClientes(); // refrescar la lista después de editar
+                  }
                 },
                 child: const Text(
                   'Editar',
                   style: TextStyle(color: Colors.orange),
                 ),
               ),
-              TextButton(
-                onPressed: () async {
-                  await ClienteRepository().eliminarCliente(cliente.id!);
-                  Navigator.pop(context);
-                  _cargarClientes(); // refrescar la lista
-                },
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: Colors.redAccent),
-                ),
-              ),
+
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
