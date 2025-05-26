@@ -42,4 +42,6 @@ class Cliente {
       estado: map['estado'],
     );
   }
+
+  get codigo => null;
 }
