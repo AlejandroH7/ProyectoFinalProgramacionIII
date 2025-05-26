@@ -80,7 +80,7 @@ class _RegistroClientesPageState extends State<RegistroClientesPage> {
                     ),
                   );
                   if (actualizado == true) {
-                    _cargarClientes(); // refrescar la lista después de editar
+                    _cargarClientes();
                   }
                 },
                 child: const Text(
@@ -88,7 +88,17 @@ class _RegistroClientesPageState extends State<RegistroClientesPage> {
                   style: TextStyle(color: Colors.orange),
                 ),
               ),
-
+              TextButton(
+                onPressed: () async {
+                  await ClienteRepository().eliminarCliente(cliente.id!);
+                  Navigator.pop(context);
+                  _cargarClientes(); // Refresca después de eliminar
+                },
+                child: const Text(
+                  'Eliminar',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(

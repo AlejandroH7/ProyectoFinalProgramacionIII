@@ -28,8 +28,20 @@ class _EditarClientePageState extends State<EditarClientePage> {
     _nombreController = TextEditingController(text: cliente.nombre);
     _telefonoController = TextEditingController(text: cliente.telefono);
     sexo = cliente.sexo;
-    fechaNacimiento = DateTime.parse(cliente.fechaNacimiento);
-    fechaMembresia = DateTime.parse(cliente.fechaInicioMembresia);
+
+    try {
+      fechaNacimiento = DateFormat('yyyy-MM-dd').parse(cliente.fechaNacimiento);
+    } catch (_) {
+      fechaNacimiento = null;
+    }
+
+    try {
+      fechaMembresia = DateFormat(
+        'yyyy-MM-dd',
+      ).parse(cliente.fechaInicioMembresia);
+    } catch (_) {
+      fechaMembresia = null;
+    }
   }
 
   Future<void> _seleccionarFecha(bool esNacimiento) async {
@@ -80,10 +92,7 @@ class _EditarClientePageState extends State<EditarClientePage> {
 
     await ClienteRepository().actualizarCliente(clienteActualizado);
 
-    Navigator.pop(
-      context,
-      true,
-    ); // ← devolvemos true para saber que se actualizó
+    Navigator.pop(context, true);
   }
 
   @override
@@ -106,7 +115,7 @@ class _EditarClientePageState extends State<EditarClientePage> {
             const SizedBox(height: 15),
             _buildDropdownSexo(),
             const SizedBox(height: 15),
-            _buildFechaSelector('Fecha de nacimiento', fechaNacimiento!, true),
+            _buildFechaSelector('Fecha de nacimiento', fechaNacimiento, true),
             const SizedBox(height: 15),
             _buildTextField(
               'Teléfono',
@@ -114,7 +123,7 @@ class _EditarClientePageState extends State<EditarClientePage> {
               tipo: TextInputType.phone,
             ),
             const SizedBox(height: 15),
-            _buildFechaSelector('Inicio de membresía', fechaMembresia!, false),
+            _buildFechaSelector('Inicio de membresía', fechaMembresia, false),
             const SizedBox(height: 25),
             ElevatedButton(
               onPressed: _guardarCambios,
@@ -175,8 +184,9 @@ class _EditarClientePageState extends State<EditarClientePage> {
     );
   }
 
-  Widget _buildFechaSelector(String label, DateTime fecha, bool esNacimiento) {
-    final texto = DateFormat('yyyy-MM-dd').format(fecha);
+  Widget _buildFechaSelector(String label, DateTime? fecha, bool esNacimiento) {
+    final texto =
+        fecha != null ? DateFormat('yyyy-MM-dd').format(fecha) : label;
     return GestureDetector(
       onTap: () => _seleccionarFecha(esNacimiento),
       child: Container(
