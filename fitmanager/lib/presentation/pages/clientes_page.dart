@@ -14,36 +14,39 @@ class ClientesPage extends StatefulWidget {
 
 class _ClientesPageState extends State<ClientesPage> {
   final TextEditingController _searchController = TextEditingController();
-  String estadoSeleccionado = 'Todos';
-  List<Cliente> todosLosClientes = [];
-  List<Cliente> clientesFiltrados = [];
+  List<Cliente> _clientes = [];
+  List<Cliente> _resultados = [];
 
   @override
   void initState() {
     super.initState();
     _cargarClientes();
+    _searchController.addListener(_filtrarClientes);
   }
 
   Future<void> _cargarClientes() async {
     final lista = await ClienteRepository().obtenerClientes();
     setState(() {
-      todosLosClientes = lista;
-      clientesFiltrados = lista;
+      _clientes = lista;
     });
   }
 
-  void _filtrarClientes(String query) {
-    final filtrados =
-        todosLosClientes.where((cliente) {
-          final nombre = cliente.nombre.toLowerCase();
-          final codigo = cliente.codigo?.toLowerCase() ?? '';
-          final filtro = query.toLowerCase();
-          return nombre.contains(filtro) || codigo.contains(filtro);
-        }).toList();
-
+  void _filtrarClientes() {
+    final query = _searchController.text.toLowerCase();
     setState(() {
-      clientesFiltrados = filtrados;
+      _resultados =
+          _clientes.where((cliente) {
+            final nombre = cliente.nombre.toLowerCase();
+            final codigo = cliente.id?.toLowerCase() ?? '';
+            return nombre.contains(query) || codigo.contains(query);
+          }).toList();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,7 +74,6 @@ class _ClientesPageState extends State<ClientesPage> {
             const SizedBox(height: 8),
             TextField(
               controller: _searchController,
-              onChanged: _filtrarClientes,
               style: const TextStyle(color: Colors.black87),
               decoration: InputDecoration(
                 hintText: 'Ingrese nombre o código',
@@ -85,31 +87,29 @@ class _ClientesPageState extends State<ClientesPage> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // 🧾 Lista de resultados
-            if (clientesFiltrados.isNotEmpty)
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: clientesFiltrados.length,
-                itemBuilder: (context, index) {
-                  final cliente = clientesFiltrados[index];
-                  return Card(
-                    color: const Color(0xFF2A2A2A),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: const Icon(Icons.person, color: Colors.orange),
-                      title: Text(
-                        cliente.nombre,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        'Código: ${cliente.codigo ?? "-"}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  );
-                },
+            if (_resultados.isNotEmpty)
+              Column(
+                children:
+                    _resultados.map((cliente) {
+                      return Card(
+                        color: const Color(0xFF2A2A2A),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          leading: const Icon(
+                            Icons.person,
+                            color: Colors.orange,
+                          ),
+                          title: Text(
+                            cliente.nombre,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            'Teléfono: ${cliente.telefono}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
 
             const SizedBox(height: 30),
@@ -143,31 +143,9 @@ class _ClientesPageState extends State<ClientesPage> {
                 );
               },
             ),
-            const SizedBox(height: 30),
-
-            // 🔄 Filtro
-            Text(
-              'Filtrar por estado',
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            _buildDropdown(),
-            const SizedBox(height: 10),
-
-            if (estadoSeleccionado != 'Todos')
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  'Mostrando: clientes $estadoSeleccionado'.toLowerCase(),
-                  style: GoogleFonts.poppins(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-
             const SizedBox(height: 40),
 
+            // ↩️ Volver
             Center(
               child: _buildSecondaryButton(
                 icon: Icons.arrow_back,
@@ -224,27 +202,8 @@ class _ClientesPageState extends State<ClientesPage> {
       onPressed: onPressed,
     );
   }
+}
 
-  Widget _buildDropdown() {
-    return DropdownButtonFormField<String>(
-      value: estadoSeleccionado,
-      dropdownColor: const Color.fromARGB(255, 192, 190, 190),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[300],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-      ),
-      style: const TextStyle(color: Colors.black),
-      items: const [
-        DropdownMenuItem(value: 'Todos', child: Text('Todos')),
-        DropdownMenuItem(value: 'Activos', child: Text('Clientes activos')),
-        DropdownMenuItem(value: 'Inactivos', child: Text('Clientes inactivos')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          estadoSeleccionado = value!;
-        });
-      },
-    );
-  }
+extension on int? {
+  toLowerCase() {}
 }
