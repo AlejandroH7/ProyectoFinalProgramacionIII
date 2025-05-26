@@ -1,30 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fitmanager/data/models/cliente_model.dart';
+import 'package:fitmanager/data/repositories/cliente_repository.dart';
 
-class RegistroClientesPage extends StatelessWidget {
+class RegistroClientesPage extends StatefulWidget {
   const RegistroClientesPage({super.key});
 
-  // Lista simulada de clientes
-  final List<Map<String, String>> clientes = const [
-    {
-      'codigo': 'CLT-0001',
-      'nombre': 'Carlos Pérez',
-      'estado': 'Activo',
-      'fechaRegistro': '2024-05-01',
-    },
-    {
-      'codigo': 'CLT-0002',
-      'nombre': 'María López',
-      'estado': 'Inactivo',
-      'fechaRegistro': '2024-04-22',
-    },
-    {
-      'codigo': 'CLT-0003',
-      'nombre': 'Luis Gómez',
-      'estado': 'Activo',
-      'fechaRegistro': '2024-05-10',
-    },
-  ];
+  @override
+  State<RegistroClientesPage> createState() => _RegistroClientesPageState();
+}
+
+class _RegistroClientesPageState extends State<RegistroClientesPage> {
+  List<Cliente> clientes = [];
+  bool cargando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarClientes();
+  }
+
+  Future<void> _cargarClientes() async {
+    final lista = await ClienteRepository().obtenerClientes();
+    setState(() {
+      clientes = lista;
+      cargando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,64 +35,58 @@ class RegistroClientesPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF2A2A2A),
         title: Text(
-          'Registro de clientes',
+          'Clientes registrados',
           style: GoogleFonts.poppins(color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFFFF9800),
-        onPressed: () {
-          // Aquí irá la navegación a filtro por estado
-        },
-        label: const Text('Filtrar por estado'),
-        icon: const Icon(Icons.filter_alt),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: clientes.length,
-        itemBuilder: (context, index) {
-          final cliente = clientes[index];
-          return Card(
-            color: const Color(0xFF2A2A2A),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            margin: const EdgeInsets.only(bottom: 16),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor:
-                    cliente['estado'] == 'Activo' ? Colors.green : Colors.grey,
-                child: const Icon(Icons.person, color: Colors.white),
-              ),
-              title: Text(
-                cliente['nombre']!,
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
+      body:
+          cargando
+              ? const Center(
+                child: CircularProgressIndicator(color: Colors.orange),
+              )
+              : clientes.isEmpty
+              ? const Center(
+                child: Text(
+                  'No hay clientes registrados.',
+                  style: TextStyle(color: Colors.white70),
                 ),
+              )
+              : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: clientes.length,
+                itemBuilder: (context, index) {
+                  final cliente = clientes[index];
+                  return Card(
+                    color: const Color(0xFF2A2A2A),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      leading: const Icon(Icons.person, color: Colors.orange),
+                      title: Text(
+                        cliente.nombre,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sexo: ${cliente.sexo}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          Text(
+                            'Teléfono: ${cliente.telefono}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          Text(
+                            'Membresía desde: ${cliente.fechaInicioMembresia}',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
-              subtitle: Text(
-                'Código: ${cliente['codigo']}\nRegistrado: ${cliente['fechaRegistro']}',
-                style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
-              ),
-              trailing: Text(
-                cliente['estado']!,
-                style: TextStyle(
-                  color:
-                      cliente['estado'] == 'Activo'
-                          ? Colors.greenAccent
-                          : Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              onTap: () {
-                // En el futuro: ver detalle o editar
-              },
-            ),
-          );
-        },
-      ),
     );
   }
 }
