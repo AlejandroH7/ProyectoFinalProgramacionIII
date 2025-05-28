@@ -9,7 +9,7 @@ class PagoRepository {
 
   Future<List<Pago>> obtenerPagos() async {
     final db = await DBHelper.db();
-    final List<Map<String, dynamic>> maps = await db.query('pagos');
+    final maps = await db.query('pagos');
     return List.generate(maps.length, (i) => Pago.fromMap(maps[i]));
   }
 }

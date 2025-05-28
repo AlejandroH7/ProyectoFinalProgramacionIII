@@ -26,17 +26,15 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
 
   Future<void> _cargarClientes() async {
     final lista = await ClienteRepository().obtenerClientes();
-    setState(() {
-      clientes = lista;
-    });
+    setState(() => clientes = lista);
   }
 
   Future<void> _seleccionarFecha() async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2023),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime(2100),
       builder:
           (context, child) => Theme(
             data: ThemeData.dark().copyWith(
@@ -50,57 +48,56 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
     );
 
     if (picked != null) {
-      setState(() {
-        fechaSeleccionada = picked;
-      });
+      setState(() => fechaSeleccionada = picked);
     }
   }
 
   Future<void> _registrarPago() async {
-    if (clienteSeleccionado != null && fechaSeleccionada != null) {
-      final pago = Pago(
-        clienteId: clienteSeleccionado!.id!,
-        fechaPago: DateFormat('yyyy-MM-dd').format(fechaSeleccionada!),
-      );
-
-      await PagoRepository().insertarPago(pago);
-
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              backgroundColor: const Color(0xFF2A2A2A),
-              title: const Text(
-                'Pago registrado',
-                style: TextStyle(color: Colors.white),
-              ),
-              content: Text(
-                'Cliente: ${clienteSeleccionado!.nombre}\nFecha de pago: ${pago.fechaPago}',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(backgroundColor: Colors.orange),
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-      );
-    } else {
+    if (clienteSeleccionado == null || fechaSeleccionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, seleccione un cliente y una fecha'),
-        ),
+        const SnackBar(content: Text('Debe seleccionar cliente y fecha')),
       );
+      return;
     }
+
+    final nuevoPago = Pago(
+      clienteId: clienteSeleccionado!.id!,
+      fechaPago: DateFormat('yyyy-MM-dd').format(fechaSeleccionada!),
+    );
+
+    await PagoRepository().insertarPago(nuevoPago);
+
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2A2A2A),
+            title: const Text(
+              'Pago registrado',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: Text(
+              'Cliente: ${clienteSeleccionado!.nombre}\nFecha: ${DateFormat('dd/MM/yyyy').format(fechaSeleccionada!)}',
+              style: const TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(backgroundColor: Colors.orange),
+                child: const Text('OK', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final fechaTexto =
+        fechaSeleccionada != null
+            ? DateFormat('dd/MM/yyyy').format(fechaSeleccionada!)
+            : 'Seleccionar fecha de pago';
+
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -114,7 +111,6 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DropdownButtonFormField<Cliente>(
               value: clienteSeleccionado,
@@ -122,47 +118,72 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
                   clientes.map((cliente) {
                     return DropdownMenuItem(
                       value: cliente,
-                      child: Text(
-                        '${cliente.nombre} (CLT-${cliente.id!.toString().padLeft(4, '0')})',
-                      ),
+                      child: Text('${cliente.nombre} (ID: ${cliente.id})'),
                     );
                   }).toList(),
               onChanged: (value) => setState(() => clienteSeleccionado = value),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[300],
+                hintText: 'Seleccionar cliente',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(6),
                 ),
-                hintText: 'Seleccionar cliente',
               ),
-              style: const TextStyle(color: Colors.black),
-              dropdownColor: const Color.fromARGB(255, 192, 190, 190),
             ),
             const SizedBox(height: 16),
-            _buildSelectorFecha(),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _registrarPago,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF9800),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+            GestureDetector(
+              onTap: _seleccionarFecha,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 18,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  fechaTexto,
+                  style: const TextStyle(color: Colors.black87),
+                ),
               ),
-              child: const Text(
-                'Registrar pago',
-                style: TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 30),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _registrarPago,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF9800),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Registrar pago',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: () => Navigator.pop(context),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: const BorderSide(color: Colors.white),
-              ),
-              child: const Text(
-                'Cancelar y volver',
-                style: TextStyle(color: Colors.white),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  side: const BorderSide(color: Colors.white),
+                ),
+                child: const Text(
+                  'Cancelar y volver',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ),
             ),
           ],
@@ -170,30 +191,10 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
       ),
     );
   }
-
-  Widget _buildSelectorFecha() {
-    final texto =
-        fechaSeleccionada != null
-            ? DateFormat('dd/MM/yyyy').format(fechaSeleccionada!)
-            : 'Seleccionar fecha de pago';
-
-    return GestureDetector(
-      onTap: _seleccionarFecha,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(texto, style: const TextStyle(color: Colors.black87)),
-      ),
-    );
-  }
 }
 
-
-/*import 'package:flutter/material.dart';
+/*
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
