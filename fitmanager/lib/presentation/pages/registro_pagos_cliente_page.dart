@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:fitmanager/data/models/cliente_model.dart';
+import 'package:fitmanager/data/models/pago_model.dart';
+import 'package:fitmanager/data/repositories/cliente_repository.dart';
+import 'package:fitmanager/data/repositories/pago_repository.dart';
 
 class RegistroPagosClientePage extends StatefulWidget {
   const RegistroPagosClientePage({super.key});
@@ -10,31 +14,30 @@ class RegistroPagosClientePage extends StatefulWidget {
 }
 
 class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
-  String? clienteSeleccionado;
+  List<Cliente> clientes = [];
+  Cliente? clienteSeleccionado;
+  List<Pago> pagos = [];
 
-  // Simulación de datos
-  final Map<String, List<Map<String, String>>> pagosPorCliente = {
-    'Carlos Pérez (CLT-0001)': [
-      {'fecha': '2024-05-01', 'monto': 'Q200'},
-      {'fecha': '2024-04-01', 'monto': 'Q200'},
-    ],
-    'María López (CLT-0002)': [
-      {'fecha': '2024-04-15', 'monto': 'Q200'},
-    ],
-    'Luis Gómez (CLT-0003)': [
-      {'fecha': '2024-05-10', 'monto': 'Q250'},
-      {'fecha': '2024-04-10', 'monto': 'Q250'},
-      {'fecha': '2024-03-10', 'monto': 'Q250'},
-    ],
-  };
+  @override
+  void initState() {
+    super.initState();
+    _cargarClientes();
+  }
+
+  Future<void> _cargarClientes() async {
+    final lista = await ClienteRepository().obtenerClientes();
+    setState(() => clientes = lista);
+  }
+
+  Future<void> _cargarPagosDelCliente(int clienteId) async {
+    final listaPagos = await PagoRepository().obtenerPagos();
+    final filtrados =
+        listaPagos.where((p) => p.clienteId == clienteId).toList();
+    setState(() => pagos = filtrados);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final historial =
-        clienteSeleccionado != null
-            ? pagosPorCliente[clienteSeleccionado] ?? []
-            : [];
-
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -50,38 +53,37 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<Cliente>(
               value: clienteSeleccionado,
+              items:
+                  clientes.map((cliente) {
+                    return DropdownMenuItem(
+                      value: cliente,
+                      child: Text('${cliente.nombre} (ID: ${cliente.id})'),
+                    );
+                  }).toList(),
+              onChanged: (cliente) {
+                setState(() => clienteSeleccionado = cliente);
+                if (cliente != null) {
+                  _cargarPagosDelCliente(cliente.id!);
+                }
+              },
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[300],
+                hintText: 'Seleccionar cliente',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(6),
                 ),
-                hintText: 'Seleccionar cliente',
               ),
+              dropdownColor: Colors.grey[200],
               style: const TextStyle(color: Colors.black),
-              dropdownColor: const Color.fromARGB(
-                255,
-                192,
-                190,
-                190,
-              ), // fondo gris claro
-              items:
-                  pagosPorCliente.keys.map((nombre) {
-                    return DropdownMenuItem(value: nombre, child: Text(nombre));
-                  }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  clienteSeleccionado = value;
-                });
-              },
             ),
             const SizedBox(height: 24),
 
             if (clienteSeleccionado != null)
               Text(
-                'Historial de pagos de $clienteSeleccionado',
+                'Historial de pagos de ${clienteSeleccionado!.nombre}',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 16,
@@ -93,19 +95,17 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
 
             Expanded(
               child:
-                  historial.isEmpty
-                      ? Center(
+                  pagos.isEmpty
+                      ? const Center(
                         child: Text(
-                          clienteSeleccionado == null
-                              ? 'Seleccione un cliente'
-                              : 'Sin pagos registrados',
-                          style: const TextStyle(color: Colors.white70),
+                          'Sin pagos registrados',
+                          style: TextStyle(color: Colors.white70),
                         ),
                       )
                       : ListView.builder(
-                        itemCount: historial.length,
+                        itemCount: pagos.length,
                         itemBuilder: (context, index) {
-                          final pago = historial[index];
+                          final pago = pagos[index];
                           return Card(
                             color: const Color(0xFF2A2A2A),
                             margin: const EdgeInsets.only(bottom: 12),
@@ -114,12 +114,12 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
                                 Icons.payment,
                                 color: Colors.orange,
                               ),
-                              title: Text(
-                                '${pago['monto']}',
-                                style: const TextStyle(color: Colors.white),
+                              title: const Text(
+                                'Pago registrado',
+                                style: TextStyle(color: Colors.white),
                               ),
                               subtitle: Text(
-                                'Fecha: ${pago['fecha']}',
+                                'Fecha: ${pago.fechaPago}',
                                 style: const TextStyle(color: Colors.white70),
                               ),
                             ),
