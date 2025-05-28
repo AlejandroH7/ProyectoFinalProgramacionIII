@@ -35,10 +35,37 @@ class _GenerarReciboPageState extends State<GenerarReciboPage> {
   Future<void> _cargarPagosDelCliente(int clienteId) async {
     final pagos = await PagoRepository().obtenerPagos();
     final filtrados =
-        pagos.where((p) => p.clienteId == clienteId).toList()..sort(
-          (a, b) => b.fechaPago.compareTo(a.fechaPago),
-        ); // más recientes primero
+        pagos.where((p) => p.clienteId == clienteId).toList()
+          ..sort((a, b) => b.fechaPago.compareTo(a.fechaPago));
     setState(() => pagosDelCliente = filtrados);
+  }
+
+  void _mostrarRestriccionPro() {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2A2A2A),
+            title: const Text(
+              'Función exclusiva',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              'Esta opción solo está disponible con la suscripción de Fit Manager Pro.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(backgroundColor: Colors.orange),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+    );
   }
 
   @override
@@ -78,7 +105,6 @@ class _GenerarReciboPageState extends State<GenerarReciboPage> {
             ),
             const SizedBox(height: 16),
 
-            // Etapas del flujo:
             if (clienteSeleccionado == null)
               Expanded(
                 child: ListView.builder(
@@ -207,11 +233,7 @@ class _GenerarReciboPageState extends State<GenerarReciboPage> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Recibo generado.')),
-                        );
-                      },
+                      onPressed: _mostrarRestriccionPro,
                       icon: const Icon(Icons.download, color: Colors.white),
                       label: const Text(
                         'Descargar recibo',
@@ -225,7 +247,6 @@ class _GenerarReciboPageState extends State<GenerarReciboPage> {
                   ],
                 ),
               ),
-
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: () {
@@ -238,8 +259,8 @@ class _GenerarReciboPageState extends State<GenerarReciboPage> {
                 }
               },
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
                 side: const BorderSide(color: Colors.white),
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: const Text(
                 'Volver',
