@@ -34,7 +34,8 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
     final filtrados =
         listaPagos.where((p) => p.clienteId == clienteId).toList()..sort(
           (a, b) => b.fechaPago.compareTo(a.fechaPago),
-        ); // 🔥 Orden descendente
+        ); // Orden descendente
+
     setState(() => pagos = filtrados);
   }
 
@@ -82,7 +83,6 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
               style: const TextStyle(color: Colors.black),
             ),
             const SizedBox(height: 24),
-
             if (clienteSeleccionado != null)
               Text(
                 'Historial de pagos de ${clienteSeleccionado!.nombre}',
@@ -92,9 +92,7 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-
             const SizedBox(height: 12),
-
             Expanded(
               child:
                   pagos.isEmpty
@@ -129,7 +127,6 @@ class _RegistroPagosClientePageState extends State<RegistroPagosClientePage> {
                         },
                       ),
             ),
-
             const SizedBox(height: 16),
             OutlinedButton(
               onPressed: () => Navigator.pop(context),

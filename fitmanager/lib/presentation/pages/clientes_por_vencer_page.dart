@@ -2,15 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-<<<<<<< HEAD
-=======
-import 'package:fitmanager/data/models/cliente_model.dart';
->>>>>>> 5e099d480be62dad44b54c9ed25427077ba369f7
 import 'package:fitmanager/data/repositories/cliente_repository.dart';
 import 'package:fitmanager/data/repositories/pago_repository.dart';
 
 class ClientesPorVencerPage extends StatefulWidget {
-<<<<<<< HEAD
   const ClientesPorVencerPage({super.key});
 
   @override
@@ -39,22 +34,24 @@ class _ClientesPorVencerPageState extends State<ClientesPorVencerPage> {
           pagos.where((p) => p.clienteId == cliente.id).toList()
             ..sort((a, b) => b.fechaPago.compareTo(a.fechaPago));
 
-      if (pagosCliente.isEmpty) continue;
+      if (pagosCliente.isNotEmpty) {
+        final ultimoPago = pagosCliente.first;
+        final fechaPago = DateTime.parse(ultimoPago.fechaPago);
+        final fechaVencimiento = fechaPago.add(const Duration(days: 30));
+        final diasRestantes = fechaVencimiento.difference(hoy).inDays;
 
-      final ultimoPago = DateTime.parse(pagosCliente.first.fechaPago);
-      final proximoPago = ultimoPago.add(const Duration(days: 30));
-      final diferencia = proximoPago.difference(hoy).inDays;
+        if (diasRestantes >= 0 && diasRestantes <= 7) {
+          resultado.add({
+            'nombre': cliente.nombre,
+            'codigo': 'CLT-${cliente.id.toString().padLeft(4, '0')}',
+            'vence': DateFormat('yyyy-MM-dd').format(fechaVencimiento),
+          });
 
-      if (diferencia >= 0 && diferencia <= 7) {
-        resultado.add({
-          'nombre': cliente.nombre,
-          'codigo': 'CLT-${cliente.id.toString().padLeft(4, '0')}',
-          'vence': DateFormat('yyyy-MM-dd').format(proximoPago),
-        });
-
-        if (!idsNotificados.contains(cliente.id)) {
-          _mostrarNotificacion(cliente.nombre);
-          idsNotificados.add(cliente.id!);
+          // Mostrar notificación solo una vez
+          if (!idsNotificados.contains(cliente.id)) {
+            _mostrarNotificacion(cliente.nombre);
+            idsNotificados.add(cliente.id!);
+          }
         }
       }
     }
@@ -65,8 +62,11 @@ class _ClientesPorVencerPageState extends State<ClientesPorVencerPage> {
   void _mostrarNotificacion(String nombreCliente) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🔔 La membresía de $nombreCliente está por vencer.'),
-        backgroundColor: Colors.orange[700],
+        content: Text(
+          '🔔 Membresía por vencer: $nombreCliente debe renovar pronto.',
+        ),
+        backgroundColor: Colors.orange[800],
+        behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
       ),
     );

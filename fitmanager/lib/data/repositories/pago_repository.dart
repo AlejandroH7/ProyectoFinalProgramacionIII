@@ -18,26 +18,32 @@ class PagoRepository {
     final db = await DBHelper.db();
     final List<Map<String, dynamic>> maps = await db.query(
       'pagos',
-      where: 'cliente_id = ?',
+      where: 'clienteId = ?', // 👈 importante que coincida con tu modelo
       whereArgs: [clienteId],
-      orderBy: 'fecha_pago DESC',
+      orderBy: 'fechaPago DESC',
     );
     return maps.map((map) => Pago.fromMap(map)).toList();
   }
 
-  // ✅ Obtener el último pago registrado por cada cliente
+  // ✅ Obtener todos los pagos (usado por clientes_por_vencer_page.dart)
+  Future<List<Pago>> obtenerPagos() async {
+    final db = await DBHelper.db();
+    final List<Map<String, dynamic>> maps = await db.query('pagos');
+    return maps.map((map) => Pago.fromMap(map)).toList();
+  }
+
+  // Obtener el último pago registrado por cada cliente
   Future<Map<int, String>> obtenerUltimosPagosPorCliente() async {
     final db = await DBHelper.db();
-
     final result = await db.rawQuery('''
-      SELECT cliente_id, MAX(fecha_pago) AS ultimo_pago
+      SELECT clienteId, MAX(fechaPago) AS ultimo_pago
       FROM pagos
-      GROUP BY cliente_id
+      GROUP BY clienteId
     ''');
 
     final Map<int, String> ultimosPagos = {};
     for (final row in result) {
-      ultimosPagos[row['cliente_id'] as int] = row['ultimo_pago'] as String;
+      ultimosPagos[row['clienteId'] as int] = row['ultimo_pago'] as String;
     }
 
     return ultimosPagos;
