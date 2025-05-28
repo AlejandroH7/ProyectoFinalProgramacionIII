@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+<<<<<<< HEAD
+=======
+import 'package:fitmanager/data/models/cliente_model.dart';
+>>>>>>> 5e099d480be62dad44b54c9ed25427077ba369f7
 import 'package:fitmanager/data/repositories/cliente_repository.dart';
 import 'package:fitmanager/data/repositories/pago_repository.dart';
 
 class ClientesPorVencerPage extends StatefulWidget {
+<<<<<<< HEAD
   const ClientesPorVencerPage({super.key});
 
   @override
@@ -156,28 +161,53 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class ClientesPorVencerPage extends StatelessWidget {
+=======
+>>>>>>> 5e099d480be62dad44b54c9ed25427077ba369f7
   const ClientesPorVencerPage({super.key});
 
-  // Lista simulada de clientes con fecha de vencimiento de membresía
-  final List<Map<String, dynamic>> clientes = const [
-    {'nombre': 'Carlos Pérez', 'codigo': 'CLT-0001', 'vence': '2024-05-27'},
-    {'nombre': 'María López', 'codigo': 'CLT-0002', 'vence': '2024-05-20'},
-    {'nombre': 'Luis Gómez', 'codigo': 'CLT-0003', 'vence': '2024-06-10'},
-    {'nombre': 'Ana Martínez', 'codigo': 'CLT-0004', 'vence': '2024-05-23'},
-  ];
+  @override
+  State<ClientesPorVencerPage> createState() => _ClientesPorVencerPageState();
+}
+
+class _ClientesPorVencerPageState extends State<ClientesPorVencerPage> {
+  List<Map<String, dynamic>> clientesPorVencer = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarClientesPorVencer();
+  }
+
+  Future<void> _cargarClientesPorVencer() async {
+    final hoy = DateTime.now();
+    final clientes = await ClienteRepository().obtenerClientes();
+    final pagos = await PagoRepository().obtenerUltimosPagosPorCliente();
+
+    final List<Map<String, dynamic>> resultado = [];
+
+    for (final cliente in clientes) {
+      if (pagos.containsKey(cliente.id)) {
+        final fechaUltimoPago = DateFormat(
+          'yyyy-MM-dd',
+        ).parse(pagos[cliente.id]!);
+        final fechaProximoPago = fechaUltimoPago.add(const Duration(days: 30));
+        final diferencia = fechaProximoPago.difference(hoy).inDays;
+
+        if (diferencia >= 0 && diferencia <= 7) {
+          resultado.add({
+            'nombre': cliente.nombre,
+            'codigo': 'CLT-${cliente.id.toString().padLeft(4, '0')}',
+            'vence': DateFormat('yyyy-MM-dd').format(fechaProximoPago),
+          });
+        }
+      }
+    }
+
+    setState(() => clientesPorVencer = resultado);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final DateTime hoy = DateTime.now();
-    final List<Map<String, dynamic>> proximosAVencer =
-        clientes.where((cliente) {
-          final DateTime fechaVencimiento = DateFormat(
-            'yyyy-MM-dd',
-          ).parse(cliente['vence']);
-          final Duration diferencia = fechaVencimiento.difference(hoy);
-          return diferencia.inDays >= 0 && diferencia.inDays <= 7;
-        }).toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E1E),
       appBar: AppBar(
@@ -200,7 +230,7 @@ class ClientesPorVencerPage extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child:
-                  proximosAVencer.isEmpty
+                  clientesPorVencer.isEmpty
                       ? const Center(
                         child: Text(
                           'Ningún cliente por vencer pronto.',
@@ -208,9 +238,9 @@ class ClientesPorVencerPage extends StatelessWidget {
                         ),
                       )
                       : ListView.builder(
-                        itemCount: proximosAVencer.length,
+                        itemCount: clientesPorVencer.length,
                         itemBuilder: (context, index) {
-                          final cliente = proximosAVencer[index];
+                          final cliente = clientesPorVencer[index];
                           return Card(
                             color: const Color(0xFF2A2A2A),
                             margin: const EdgeInsets.only(bottom: 12),
