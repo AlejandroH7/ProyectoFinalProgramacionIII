@@ -105,15 +105,37 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
               'Pago registrado',
               style: TextStyle(color: Colors.white),
             ),
-            content: Text(
-              'Cliente: ${clienteSeleccionado!.nombre}\nFecha: ${DateFormat('dd/MM/yyyy').format(fechaSeleccionada!)}',
-              style: const TextStyle(color: Colors.white70),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Cliente: ${clienteSeleccionado!.nombre}\nFecha: ${DateFormat('dd/MM/yyyy').format(fechaSeleccionada!)}',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 20),
+                const Divider(color: Colors.white30),
+                const SizedBox(height: 12),
+                const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.orange,
+                  size: 32,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Con Fit Manager Pro puedes añadir el monto del pago,\nla dirección del cliente y otros datos importantes\npara un control avanzado.',
+                  style: TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(backgroundColor: Colors.orange),
-                child: const Text('OK', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Aceptar',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -222,6 +244,7 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
   }
 }
 
+
 /*
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -284,6 +307,35 @@ class _RealizarPagoPageState extends State<RealizarPagoPage> {
       );
       return;
     }
+
+    final confirmacion = await showDialog<bool>(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            backgroundColor: const Color(0xFF2A2A2A),
+            title: const Text(
+              '¿Confirmar pago?',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              'Por favor verifique que la información sea correcta.\n\n⚠️ Recuerde que los pagos no son editables.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                child: const Text('Confirmar'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmacion != true) return;
 
     final nuevoPago = Pago(
       clienteId: clienteSeleccionado!.id!,
