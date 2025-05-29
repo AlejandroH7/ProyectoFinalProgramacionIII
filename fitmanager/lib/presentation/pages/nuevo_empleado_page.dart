@@ -95,24 +95,28 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
 
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          backgroundColor: const Color(0xFF2A2A2A),
-          title: const Text(
-            'Empleado registrado',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Text(
-            'El empleado fue registrado exitosamente.',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(backgroundColor: Colors.orange),
-              child: const Text('OK', style: TextStyle(color: Colors.white)),
+        builder:
+            (_) => AlertDialog(
+              backgroundColor: const Color(0xFF2A2A2A),
+              title: const Text(
+                'Empleado registrado',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: Text(
+                'El empleado fue registrado exitosamente.',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(backgroundColor: Colors.orange),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       );
 
       _formKey.currentState!.reset();
@@ -154,21 +158,35 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
               _buildTextField('Nombre completo', onSaved: (v) => nombre = v),
               _buildDropdown('Sexo', sexos, (val) => sexo = val),
               _buildFechaPicker(),
-              _buildTextField('Teléfono', onSaved: (v) => telefono = v, keyboard: TextInputType.phone),
+              _buildTextField(
+                'Teléfono',
+                onSaved: (v) => telefono = v,
+                keyboard: TextInputType.phone,
+              ),
               _buildHora('Hora de entrada', true),
               _buildHora('Hora de salida', false),
               _buildDropdown('Área de trabajo', areas, (val) => area = val),
               _buildDiasDeTrabajo(),
               _buildTextField('Usuario', onSaved: (v) => usuario = v),
-              _buildTextField('Clave', onSaved: (v) => clave = v, isPassword: true),
+              _buildTextField(
+                'Clave',
+                onSaved: (v) => clave = v,
+                isPassword: true,
+              ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _registrarEmpleado,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 24,
+                  ),
                 ),
-                child: const Text('Registrar nuevo empleado', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Registrar nuevo empleado',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               const SizedBox(height: 12),
               OutlinedButton(
@@ -176,7 +194,10 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.white),
                 ),
-                child: const Text('Cancelar y volver', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Cancelar y volver',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -185,7 +206,8 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
     );
   }
 
-  Widget _buildTextField(String label, {
+  Widget _buildTextField(
+    String label, {
     required void Function(String?) onSaved,
     bool isPassword = false,
     TextInputType keyboard = TextInputType.text,
@@ -203,15 +225,23 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
     );
   }
 
-  Widget _buildDropdown(String label, List<String> options, Function(String?) onChanged) {
+  Widget _buildDropdown(
+    String label,
+    List<String> options,
+    Function(String?) onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: DropdownButtonFormField<String>(
         decoration: _inputDecoration(label),
         dropdownColor: const Color.fromARGB(255, 192, 190, 190),
-        items: options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+        items:
+            options
+                .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
+                .toList(),
         onChanged: onChanged,
-        validator: (v) => (v == null || v.isEmpty) ? 'Seleccione una opción' : null,
+        validator:
+            (v) => (v == null || v.isEmpty) ? 'Seleccione una opción' : null,
         style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
       ),
     );
@@ -276,28 +306,32 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Días de trabajo', style: TextStyle(color: Colors.white, fontSize: 14)),
+        const Text(
+          'Días de trabajo',
+          style: TextStyle(color: Colors.white, fontSize: 14),
+        ),
         Wrap(
           spacing: 8,
-          children: diasSemana.map((dia) {
-            final seleccionado = diasSeleccionados.contains(dia);
-            return FilterChip(
-              selected: seleccionado,
-              label: Text(dia),
-              selectedColor: Colors.orange,
-              backgroundColor: Colors.grey,
-              labelStyle: const TextStyle(color: Colors.white),
-              onSelected: (valor) {
-                setState(() {
-                  if (valor) {
-                    diasSeleccionados.add(dia);
-                  } else {
-                    diasSeleccionados.remove(dia);
-                  }
-                });
-              },
-            );
-          }).toList(),
+          children:
+              diasSemana.map((dia) {
+                final seleccionado = diasSeleccionados.contains(dia);
+                return FilterChip(
+                  selected: seleccionado,
+                  label: Text(dia),
+                  selectedColor: Colors.orange,
+                  backgroundColor: Colors.grey,
+                  labelStyle: const TextStyle(color: Colors.white),
+                  onSelected: (valor) {
+                    setState(() {
+                      if (valor) {
+                        diasSeleccionados.add(dia);
+                      } else {
+                        diasSeleccionados.remove(dia);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
         ),
         const SizedBox(height: 14),
       ],
@@ -314,7 +348,6 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
     );
   }
 }
-
 
 /*
 import 'package:flutter/material.dart';
