@@ -4,10 +4,10 @@ class Empleado {
   final String sexo;
   final String fechaNacimiento;
   final String telefono;
-  final String area;
   final String horaEntrada;
   final String horaSalida;
-  final String diasLaborales;
+  final String area;
+  final String diasTrabajo; // ⬅️ CAMPO FALTANTE
   final String usuario;
   final String clave;
 
@@ -17,10 +17,10 @@ class Empleado {
     required this.sexo,
     required this.fechaNacimiento,
     required this.telefono,
-    required this.area,
     required this.horaEntrada,
     required this.horaSalida,
-    required this.diasLaborales,
+    required this.area,
+    required this.diasTrabajo, // ⬅️ AÑADIDO AQUÍ
     required this.usuario,
     required this.clave,
   });
@@ -32,10 +32,10 @@ class Empleado {
       'sexo': sexo,
       'fechaNacimiento': fechaNacimiento,
       'telefono': telefono,
-      'area': area,
       'horaEntrada': horaEntrada,
       'horaSalida': horaSalida,
-      'diasLaborales': diasLaborales,
+      'area': area,
+      'diasTrabajo': diasTrabajo,
       'usuario': usuario,
       'clave': clave,
     };
@@ -48,10 +48,10 @@ class Empleado {
       sexo: map['sexo'],
       fechaNacimiento: map['fechaNacimiento'],
       telefono: map['telefono'],
-      area: map['area'],
       horaEntrada: map['horaEntrada'],
       horaSalida: map['horaSalida'],
-      diasLaborales: map['diasLaborales'],
+      area: map['area'],
+      diasTrabajo: map['diasTrabajo'], // ⬅️ TAMBIÉN AÑADIDO AQUÍ
       usuario: map['usuario'],
       clave: map['clave'],
     );
