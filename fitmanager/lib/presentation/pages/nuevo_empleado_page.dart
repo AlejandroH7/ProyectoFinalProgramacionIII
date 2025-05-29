@@ -40,22 +40,20 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
   final List<String> sexos = ['Masculino', 'Femenino', 'Otro'];
 
   void _seleccionarFecha() async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime(1995),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
       builder: (context, child) => Theme(data: ThemeData.dark(), child: child!),
     );
-    if (picked != null) {
-      setState(() => fechaNacimiento = picked);
-    }
+    if (picked != null) setState(() => fechaNacimiento = picked);
   }
 
   void _seleccionarHora({required bool esEntrada}) async {
-    final TimeOfDay? picked = await showTimePicker(
+    final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: 8, minute: 0),
+      initialTime: const TimeOfDay(hour: 8, minute: 0),
     );
     if (picked != null) {
       setState(() {
@@ -91,45 +89,75 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
         clave: clave!,
       );
 
-      await EmpleadoRepository().insertarEmpleado(nuevoEmpleado);
+      try {
+        await EmpleadoRepository().insertarEmpleado(nuevoEmpleado);
 
-      showDialog(
-        context: context,
-        builder:
-            (_) => AlertDialog(
-              backgroundColor: const Color(0xFF2A2A2A),
-              title: const Text(
-                'Empleado registrado',
-                style: TextStyle(color: Colors.white),
-              ),
-              content: Text(
-                'El empleado fue registrado exitosamente.',
-                style: const TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: TextButton.styleFrom(backgroundColor: Colors.orange),
-                  child: const Text(
-                    'OK',
-                    style: TextStyle(color: Colors.white),
-                  ),
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          builder:
+              (_) => AlertDialog(
+                backgroundColor: const Color(0xFF2A2A2A),
+                title: const Text(
+                  'Empleado registrado',
+                  style: TextStyle(color: Colors.white),
                 ),
-              ],
-            ),
-      );
+                content: const Text(
+                  'El empleado fue registrado exitosamente.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(backgroundColor: Colors.orange),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+        );
 
-      _formKey.currentState!.reset();
-      setState(() {
-        sexo = null;
-        area = null;
-        usuario = null;
-        clave = null;
-        fechaNacimiento = null;
-        horaEntrada = null;
-        horaSalida = null;
-        diasSeleccionados.clear();
-      });
+        // Limpiar campos visualmente
+        _formKey.currentState!.reset();
+        setState(() {
+          sexo = null;
+          area = null;
+          usuario = null;
+          clave = null;
+          fechaNacimiento = null;
+          horaEntrada = null;
+          horaSalida = null;
+          diasSeleccionados.clear();
+        });
+      } catch (e) {
+        showDialog(
+          context: context,
+          builder:
+              (_) => AlertDialog(
+                backgroundColor: const Color(0xFF2A2A2A),
+                title: const Text(
+                  'Error al registrar',
+                  style: TextStyle(color: Colors.white),
+                ),
+                content: const Text(
+                  'Hubo un problema al guardar los datos. Intente nuevamente.',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(backgroundColor: Colors.orange),
+                    child: const Text(
+                      'OK',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Complete todos los campos')),
@@ -217,7 +245,7 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
       child: TextFormField(
         obscureText: isPassword,
         keyboardType: keyboard,
-        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+        style: const TextStyle(color: Colors.black),
         decoration: _inputDecoration(label),
         validator: (v) => (v == null || v.isEmpty) ? 'Campo requerido' : null,
         onSaved: onSaved,
@@ -234,7 +262,7 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
       padding: const EdgeInsets.only(bottom: 14),
       child: DropdownButtonFormField<String>(
         decoration: _inputDecoration(label),
-        dropdownColor: const Color.fromARGB(255, 192, 190, 190),
+        dropdownColor: Colors.grey[200],
         items:
             options
                 .map((opt) => DropdownMenuItem(value: opt, child: Text(opt)))
@@ -242,7 +270,7 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
         onChanged: onChanged,
         validator:
             (v) => (v == null || v.isEmpty) ? 'Seleccione una opción' : null,
-        style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+        style: const TextStyle(color: Colors.black),
       ),
     );
   }
@@ -276,7 +304,7 @@ class _NuevoEmpleadoPageState extends State<NuevoEmpleadoPage> {
   }
 
   Widget _buildHora(String label, bool esEntrada) {
-    final TimeOfDay? hora = esEntrada ? horaEntrada : horaSalida;
+    final hora = esEntrada ? horaEntrada : horaSalida;
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: GestureDetector(

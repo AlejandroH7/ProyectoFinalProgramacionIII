@@ -16,11 +16,13 @@ class LocalDatabase {
 
     return await openDatabase(
       path,
-      version: 3, // ⬅️ Se sube la versión para aplicar los nuevos cambios
+      version: 4, // ⬅️ Cambiamos a una versión más alta para forzar recreación
       onCreate: (db, version) async {
         await _crearTablas(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
+        // Elimina y vuelve a crear la tabla empleados para evitar errores
+        await db.execute('DROP TABLE IF EXISTS empleados');
         await _crearTablas(db);
       },
     );
@@ -49,22 +51,23 @@ class LocalDatabase {
     ''');
 
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS empleados(
+      CREATE TABLE empleados(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT,
         sexo TEXT,
         fechaNacimiento TEXT,
         telefono TEXT,
-        area TEXT,
         horaEntrada TEXT,
         horaSalida TEXT,
-        diasLaborales TEXT,
+        area TEXT,
+        diasTrabajo TEXT, -- ✅ CAMBIO AQUÍ
         usuario TEXT,
         clave TEXT
       )
     ''');
   }
 }
+
 
 
 /*

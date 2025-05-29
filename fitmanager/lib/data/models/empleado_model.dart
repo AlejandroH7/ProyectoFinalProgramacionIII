@@ -7,7 +7,7 @@ class Empleado {
   final String horaEntrada;
   final String horaSalida;
   final String area;
-  final String diasTrabajo; // ⬅️ CAMPO FALTANTE
+  final String diasTrabajo;
   final String usuario;
   final String clave;
 
@@ -20,7 +20,7 @@ class Empleado {
     required this.horaEntrada,
     required this.horaSalida,
     required this.area,
-    required this.diasTrabajo, // ⬅️ AÑADIDO AQUÍ
+    required this.diasTrabajo,
     required this.usuario,
     required this.clave,
   });
@@ -51,7 +51,7 @@ class Empleado {
       horaEntrada: map['horaEntrada'],
       horaSalida: map['horaSalida'],
       area: map['area'],
-      diasTrabajo: map['diasTrabajo'], // ⬅️ TAMBIÉN AÑADIDO AQUÍ
+      diasTrabajo: map['diasTrabajo'],
       usuario: map['usuario'],
       clave: map['clave'],
     );
